@@ -1,0 +1,19 @@
+<iframe id="f1"
+    src="https://www.cpac.ca/en"
+    allow="autoplay"
+></iframe>
+
+<iframe id="f2"
+    src="https://www.cpac.ca/fr"
+    allow="autoplay"
+></iframe>
+
+<script>
+document.addEventListener("click", () => {
+    const f1 = document.getElementById("f1").contentWindow;
+    const f2 = document.getElementById("f2").contentWindow;
+
+    f1.postMessage("play","*");
+    f2.postMessage("play","*");
+});
+</script>
