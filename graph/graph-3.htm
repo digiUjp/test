@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3rd-Multilayer Expanded Peterson Graph (Graph-3)</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000510;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        #ui-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #00ffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            pointer-events: none;
+            background: rgba(0, 10, 30, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+        }
+
+        p {
+            margin: 5px 0;
+            font-size: 0.9rem;
+            color: #aaaaff;
+        }
+
+        .stat {
+            font-weight: bold;
+            color: #fff;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+
+<body>
+    <div id="ui-container">
+        <h1>Graph-3 (3rd Layer)</h1>
+        <p>Recursive Expansion Level 3</p>
+        <p>Total Nodes: <span class="stat">250</span></p>
+        <p>Total Edges: <span class="stat">375</span></p>
+        <p>Clusters (L2): <span class="stat">50</span></p>
+        <p>Super-Clusters (L1): <span class="stat">10</span></p>
+    </div>
+
+    <script>
+        // --- Graph Generation Logic ---
+
+        // 1. Define Base Graph (Graph-1) Edges
+        // Nodes 0-9
+        function getGraph1Edges() {
+            const edges = [];
+            // Inner Cycle (0-4)
+            for (let i = 0; i < 5; i++) edges.push([i, (i + 1) % 5]);
+            // Outer Cycle (5-9)
+            for (let i = 0; i < 5; i++) edges.push([5 + i, 5 + ((i + 1) % 5)]);
+            // Cross Connections (User defined: A-a(0-0), B-d(1-3), C-b(2-1), D-e(3-4), E-c(4-2))
+            // Note: In my code logic, Outer is 5-9 (A-E), Inner is 0-4 (a-e).
+            // Mapping: A=5, B=6, C=7, D=8, E=9. a=0, b=1, c=2, d=3, e=4.
+            // 5-0, 6-3, 7-1, 8-4, 9-2
+            const cross = [[5, 0], [6, 3], [7, 1], [8, 4], [9, 2]];
+            edges.push(...cross);
+            return edges;
+        }
+
+        // 2. Expansion Function
+        // Takes a list of edges and number of nodes in current graph.
+        // Returns new list of edges for the expanded graph.
+        function expandGraph(currentEdges, currentNodeCount) {
+            const newEdges = [];
+            const pattern = { 0: 0, 1: 3, 2: 1, 3: 4, 4: 2 };
+
+            // A. Internal Edges for each new cluster
+            // Each node i becomes a cluster of 5 nodes (5*i ... 5*i+4) forming a cycle
+            for (let i = 0; i < currentNodeCount; i++) {
+                const base = i * 5;
+                for (let k = 0; k < 5; k++) {
+                    newEdges.push({
+                        source: base + k,
+                        target: base + ((k + 1) % 5),
+                        type: 'internal'
+                    });
+                }
+            }
+
+            // B. External Edges (expanding previous edges)
+            currentEdges.forEach(edge => {
+                // Handle both array [u, v] and object {source: u, target: v} formats
+                const u = edge.source !== undefined ? edge.source : edge[0];
+                const v = edge.target !== undefined ? edge.target : edge[1];
+
+                // Determine direction for pattern application
+                // Consistent rule: Higher index is "Source" (Group 2 role), Lower is "Target" (Group 1 role)
+                const sourceCluster = (u > v) ? u : v;
+                const targetCluster = (u > v) ? v : u;
+
+                for (let srcLocal = 0; srcLocal < 5; srcLocal++) {
+                    const tgtLocal = pattern[srcLocal];
+
+                    const globalSource = sourceCluster * 5 + srcLocal;
+                    const globalTarget = targetCluster * 5 + tgtLocal;
+
+                    newEdges.push({
+                        source: globalSource,
+                        target: globalTarget,
+                        type: 'external'
+                    });
+                }
+            });
+
+            return newEdges;
+        }
+
+        // --- Generate Data ---
+
+        // Step 1: Graph-1
+        const edgesG1 = getGraph1Edges();
+        const nodesG1Count = 10;
+
+        // Step 2: Graph-2
+        const edgesG2 = expandGraph(edgesG1, nodesG1Count);
+        const nodesG2Count = 50;
+
+        // Step 3: Graph-3
+        const edgesG3 = expandGraph(edgesG2, nodesG2Count);
+        const nodesG3Count = 250;
+
+        // --- Visualization Setup ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000510);
+        scene.fog = new THREE.FogExp2(0x000510, 0.008);
+
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
+        camera.position.set(0, 0, 120);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 0.5;
+
+        // --- Layout Calculation ---
+        const nodes = [];
+
+        // Radii configuration
+        const R1_Inner = 30;
+        const R1_Outer = 55;
+        const R2 = 8;  // Radius of Graph-2 clusters
+        const R3 = 2;  // Radius of Graph-3 clusters (leaf nodes)
+
+        for (let i = 0; i < nodesG3Count; i++) {
+            // Hierarchy Indices
+            const parentIndex = Math.floor(i / 5);         // Index in Graph-2 (0-49)
+            const grandParentIndex = Math.floor(parentIndex / 5); // Index in Graph-1 (0-9)
+
+            const localIndex = i % 5;                      // 0-4 (Position in G3 cluster)
+            const parentLocalIndex = parentIndex % 5;      // 0-4 (Position in G2 cluster)
+
+            // 1. Grandparent Position (Graph-1 Layout)
+            let gpX, gpY, gpZ = 0;
+            let gpAngle;
+            if (grandParentIndex < 5) {
+                // Inner
+                gpAngle = (grandParentIndex * 2 * Math.PI / 5) - Math.PI / 2;
+                gpX = R1_Inner * Math.cos(gpAngle);
+                gpY = R1_Inner * Math.sin(gpAngle);
+            } else {
+                // Outer
+                gpAngle = ((grandParentIndex - 5) * 2 * Math.PI / 5) - Math.PI / 2;
+                gpX = R1_Outer * Math.cos(gpAngle);
+                gpY = R1_Outer * Math.sin(gpAngle);
+            }
+
+            // 2. Parent Position (Graph-2 Layout relative to GP)
+            // Rotate the cluster to align with the radial direction of the GP for aesthetics
+            // Or just keep it upright. Let's rotate it to face outward.
+            const pAngle = (parentLocalIndex * 2 * Math.PI / 5) - Math.PI / 2 + gpAngle;
+            const pX = R2 * Math.cos(pAngle);
+            const pY = R2 * Math.sin(pAngle);
+
+            // 3. Node Position (Graph-3 Layout relative to Parent)
+            const nAngle = (localIndex * 2 * Math.PI / 5) - Math.PI / 2 + pAngle;
+            const nX = R3 * Math.cos(nAngle);
+            const nY = R3 * Math.sin(nAngle);
+
+            // Combine
+            const vector = new THREE.Vector3(gpX + pX + nX, gpY + pY + nY, 0);
+
+            // Add some Z variation based on hierarchy to make it 3D
+            // e.g. Inner G1 slightly forward, Outer G1 slightly back
+            if (grandParentIndex < 5) vector.z += 5;
+            else vector.z -= 5;
+
+            // Spiral twist for visual flair
+            // vector.applyAxisAngle(new THREE.Vector3(0,0,1), i * 0.005);
+
+            nodes.push(vector);
+        }
+
+        // --- Rendering ---
+        const graphGroup = new THREE.Group();
+        scene.add(graphGroup);
+
+        // Materials
+        const nodeMat = new THREE.MeshBasicMaterial({ color: 0x00ffff });
+        const nodeGeo = new THREE.SphereGeometry(0.3, 8, 8);
+
+        // Batch Nodes
+        const instancedMesh = new THREE.InstancedMesh(nodeGeo, nodeMat, nodesG3Count);
+        const dummy = new THREE.Object3D();
+
+        nodes.forEach((pos, idx) => {
+            dummy.position.copy(pos);
+            dummy.updateMatrix();
+            instancedMesh.setMatrixAt(idx, dummy.matrix);
+        });
+        graphGroup.add(instancedMesh);
+
+        // Edges
+        // Separate by type for coloring
+        const internalEdges = [];
+        const externalEdges = [];
+
+        edgesG3.forEach(e => {
+            const p1 = nodes[e.source];
+            const p2 = nodes[e.target];
+            const arr = [p1.x, p1.y, p1.z, p2.x, p2.y, p2.z];
+
+            if (e.type === 'internal') {
+                internalEdges.push(...arr);
+            } else {
+                externalEdges.push(...arr);
+            }
+        });
+
+        const intGeo = new THREE.BufferGeometry();
+        intGeo.setAttribute('position', new THREE.Float32BufferAttribute(internalEdges, 3));
+        const intMat = new THREE.LineBasicMaterial({ color: 0xff00ff, opacity: 0.8, transparent: true });
+        const intLines = new THREE.LineSegments(intGeo, intMat);
+        graphGroup.add(intLines);
+
+        const extGeo = new THREE.BufferGeometry();
+        extGeo.setAttribute('position', new THREE.Float32BufferAttribute(externalEdges, 3));
+        const extMat = new THREE.LineBasicMaterial({ color: 0x4444ff, opacity: 0.3, transparent: true });
+        const extLines = new THREE.LineSegments(extGeo, extMat);
+        graphGroup.add(extLines);
+
+        // Add "Ghost" structures for L1 and L2 to help visualize hierarchy
+        // L2 Rings
+        for (let i = 0; i < nodesG2Count; i++) {
+            // Re-calculate center of this L2 cluster
+            const gpIdx = Math.floor(i / 5);
+            const pLocal = i % 5;
+
+            // GP Pos
+            let gpAngle;
+            let cx, cy;
+            if (gpIdx < 5) {
+                gpAngle = (gpIdx * 2 * Math.PI / 5) - Math.PI / 2;
+                cx = R1_Inner * Math.cos(gpAngle);
+                cy = R1_Inner * Math.sin(gpAngle);
+            } else {
+                gpAngle = ((gpIdx - 5) * 2 * Math.PI / 5) - Math.PI / 2;
+                cx = R1_Outer * Math.cos(gpAngle);
+                cy = R1_Outer * Math.sin(gpAngle);
+            }
+
+            // P Pos
+            const pAngle = (pLocal * 2 * Math.PI / 5) - Math.PI / 2 + gpAngle;
+            const px = cx + R2 * Math.cos(pAngle);
+            const py = cy + R2 * Math.sin(pAngle);
+            const pz = (gpIdx < 5) ? 5 : -5;
+
+            const ring = new THREE.Mesh(
+                new THREE.RingGeometry(R3 * 0.8, R3 * 0.9, 16),
+                new THREE.MeshBasicMaterial({ color: 0xffffff, opacity: 0.1, transparent: true, side: THREE.DoubleSide })
+            );
+            ring.position.set(px, py, pz);
+            graphGroup.add(ring);
+        }
+
+        // Particle System for Ambiance
+        const particlesGeo = new THREE.BufferGeometry();
+        const pCount = 3000;
+        const pPos = new Float32Array(pCount * 3);
+        for (let i = 0; i < pCount * 3; i++) pPos[i] = (Math.random() - 0.5) * 300;
+        particlesGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+        const pMat = new THREE.PointsMaterial({ size: 0.5, color: 0x8888ff, transparent: true, opacity: 0.4 });
+        const particles = new THREE.Points(particlesGeo, pMat);
+        scene.add(particles);
+
+        // Animation
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+
+            // Gentle wave motion
+            const time = Date.now() * 0.0005;
+            graphGroup.rotation.z = Math.sin(time * 0.2) * 0.02;
+
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+    </script>
+</body>
+
+</html>
