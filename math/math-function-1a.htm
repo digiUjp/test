@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一次方程式ソルバー - 数学学習ツール</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            animation: fadeInDown 0.6s ease-out;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .control-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .equation-inputs {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .equation-inputs:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .equation-inputs.line1 {
+            border-left: 4px solid #667eea;
+        }
+
+        .equation-inputs.line2 {
+            border-left: 4px solid #f093fb;
+        }
+
+        .equation-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+
+        .line2 .equation-title {
+            color: #f093fb;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        label {
+            font-weight: 500;
+            color: #555;
+            min-width: 20px;
+        }
+
+        input[type="number"] {
+            width: 80px;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .equation-display {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            color: #667eea;
+            text-align: center;
+            margin-top: 10px;
+            border: 2px dashed #667eea;
+        }
+
+        .line2 .equation-display {
+            color: #f093fb;
+            border-color: #f093fb;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .solution-box {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 10px;
+        }
+
+        .solution-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #d84315;
+            margin-bottom: 10px;
+        }
+
+        .solution-content {
+            font-size: 1.1rem;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .canvas-panel {
+            position: relative;
+        }
+
+        canvas {
+            width: 100%;
+            height: 600px;
+            border-radius: 15px;
+            background: white;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .explanation {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .explanation h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .explanation-content {
+            color: #555;
+            line-height: 1.8;
+            font-size: 1rem;
+        }
+
+        .explanation-content p {
+            margin-bottom: 12px;
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .formula {
+            font-family: 'Courier New', monospace;
+            background: #f5f5f5;
+            padding: 8px 12px;
+            border-radius: 5px;
+            display: inline-block;
+            margin: 5px 0;
+            font-weight: 600;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .legend {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .legend-color {
+            width: 30px;
+            height: 3px;
+            border-radius: 2px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>📐 一次方程式ソルバー</h1>
+            <p class="subtitle">連立一次方程式の可視化と解法</p>
+        </header>
+
+        <div class="main-content">
+            <div class="control-panel">
+                <div class="equation-inputs line1">
+                    <div class="equation-title">🔵 方程式 1</div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <input type="number" id="a1" value="2" step="0.1">
+                            <label>× x +</label>
+                        </div>
+                        <div class="input-group">
+                            <input type="number" id="b1" value="1" step="0.1">
+                            <label>× y =</label>
+                        </div>
+                        <div class="input-group">
+                            <input type="number" id="c1" value="10" step="0.1">
+                        </div>
+                    </div>
+                    <div class="equation-display" id="eq1-display">2x + 1y = 10</div>
+                </div>
+
+                <div class="equation-inputs line2">
+                    <div class="equation-title">🔴 方程式 2</div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <input type="number" id="a2" value="1" step="0.1">
+                            <label>× x +</label>
+                        </div>
+                        <div class="input-group">
+                            <input type="number" id="b2" value="-1" step="0.1">
+                            <label>× y =</label>
+                        </div>
+                        <div class="input-group">
+                            <input type="number" id="c2" value="2" step="0.1">
+                        </div>
+                    </div>
+                    <div class="equation-display" id="eq2-display">1x + -1y = 2</div>
+                </div>
+
+                <button onclick="drawGraph()">🎨 グラフを描画して解く</button>
+
+                <div class="solution-box" id="solution-box" style="display: none;">
+                    <div class="solution-title">✨ 解（交点）</div>
+                    <div class="solution-content" id="solution-content"></div>
+                </div>
+            </div>
+
+            <div class="canvas-panel">
+                <canvas id="graphCanvas"></canvas>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #667eea;"></div>
+                        <span>直線 1</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #f093fb;"></div>
+                        <span>直線 2</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="explanation">
+            <h2>📚 一次方程式について</h2>
+            <div class="explanation-content">
+                <p><strong>一次方程式とは？</strong></p>
+                <p>二変数（xとy）の一次方程式は次の形をしています：<span class="formula">ax + by = c</span></p>
+                <p>ここで、<strong>a</strong>、<strong>b</strong>、<strong>c</strong>は定数です。座標平面上にグラフを描くと、この方程式は直線になります。</p>
+
+                <div class="highlight">
+                    <p><strong>🎯 重要な概念：</strong></p>
+                    <p>• <strong>傾き：</strong> 直線の傾きは比 -a/b で決まります</p>
+                    <p>• <strong>切片：</strong> 直線がx軸とy軸と交わる点</p>
+                    <p>• <strong>解：</strong> 直線上の任意の点 (x, y) はこの方程式を満たします</p>
+                </div>
+
+                <p><strong>連立一次方程式</strong></p>
+                <p>2つの一次方程式がある場合、両方の方程式を同時に満たす点 (x, y) を探します。この点が2つの直線の交点です！</p>
+
+                <div class="highlight">
+                    <p><strong>🔍 3つの可能な結果：</strong></p>
+                    <p>• <strong>1つの解：</strong> 直線が1点で交わる（最も一般的）</p>
+                    <p>• <strong>解なし：</strong> 直線が平行で交わらない</p>
+                    <p>• <strong>無限の解：</strong> 直線が一致する（同じ方程式）</p>
+                </div>
+
+                <p><strong>交点の求め方</strong></p>
+                <p>2つの方程式が与えられたとき：</p>
+                <p class="formula">a₁x + b₁y = c₁</p>
+                <p class="formula">a₂x + b₂y = c₂</p>
+                <p>消去法や代入法を使って解くことができます。グラフはこの解を視覚的に示しています！</p>
+
+                <p><strong>💡 試してみよう：</strong> 係数を変更して、直線がどのように動くかを観察してください。交点が変化することに注目してください - それがリアルタイムで更新される解です！</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('graphCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Set canvas size
+        canvas.width = canvas.offsetWidth;
+        canvas.height = 600;
+
+        // Update equation displays when inputs change
+        const inputs = ['a1', 'b1', 'c1', 'a2', 'b2', 'c2'];
+        inputs.forEach(id => {
+            document.getElementById(id).addEventListener('input', updateEquationDisplays);
+        });
+
+        function updateEquationDisplays() {
+            const a1 = document.getElementById('a1').value;
+            const b1 = document.getElementById('b1').value;
+            const c1 = document.getElementById('c1').value;
+            const a2 = document.getElementById('a2').value;
+            const b2 = document.getElementById('b2').value;
+            const c2 = document.getElementById('c2').value;
+
+            document.getElementById('eq1-display').textContent = `${a1}x + ${b1}y = ${c1}`;
+            document.getElementById('eq2-display').textContent = `${a2}x + ${b2}y = ${c2}`;
+        }
+
+        function drawGraph() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Get input values
+            const a1 = parseFloat(document.getElementById('a1').value);
+            const b1 = parseFloat(document.getElementById('b1').value);
+            const c1 = parseFloat(document.getElementById('c1').value);
+            const a2 = parseFloat(document.getElementById('a2').value);
+            const b2 = parseFloat(document.getElementById('b2').value);
+            const c2 = parseFloat(document.getElementById('c2').value);
+
+            // Set up coordinate system
+            const scale = 20; // pixels per unit
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+
+            // Draw grid (transparent)
+            drawGrid(centerX, centerY, scale);
+
+            // Draw axes (transparent)
+            drawAxes(centerX, centerY);
+
+            // Draw lines - ONLY LINES ARE VISIBLE
+            drawLine(a1, b1, c1, '#667eea', 3, centerX, centerY, scale);
+            drawLine(a2, b2, c2, '#f093fb', 3, centerX, centerY, scale);
+
+            // Calculate intersection point
+            const intersection = findIntersection(a1, b1, c1, a2, b2, c2);
+            if (intersection) {
+                displaySolution(intersection.x, intersection.y);
+            } else {
+                displayNoSolution();
+            }
+        }
+
+        function drawGrid(centerX, centerY, scale) {
+            // Make grid transparent (invisible)
+            ctx.strokeStyle = 'rgba(0, 0, 0, 0)';
+            ctx.lineWidth = 1;
+
+            // Vertical lines
+            for (let x = 0; x < canvas.width; x += scale) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+
+            // Horizontal lines
+            for (let y = 0; y < canvas.height; y += scale) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+        }
+
+        function drawAxes(centerX, centerY) {
+            // Make axes transparent (invisible)
+            ctx.strokeStyle = 'rgba(0, 0, 0, 0)';
+            ctx.lineWidth = 2;
+
+            // X-axis
+            ctx.beginPath();
+            ctx.moveTo(0, centerY);
+            ctx.lineTo(canvas.width, centerY);
+            ctx.stroke();
+
+            // Y-axis
+            ctx.beginPath();
+            ctx.moveTo(centerX, 0);
+            ctx.lineTo(centerX, canvas.height);
+            ctx.stroke();
+
+            // Make labels transparent (invisible)
+            ctx.fillStyle = 'rgba(0, 0, 0, 0)';
+            ctx.font = '14px Noto Sans JP';
+            ctx.textAlign = 'center';
+            ctx.fillText('x', canvas.width - 20, centerY - 10);
+            ctx.fillText('y', centerX + 15, 20);
+
+            // Make tick marks and numbers transparent (invisible)
+            const scale = 20;
+            ctx.font = '12px Noto Sans JP';
+
+            // X-axis ticks
+            for (let i = -Math.floor(centerX / scale); i <= Math.floor((canvas.width - centerX) / scale); i++) {
+                if (i === 0) continue;
+                const x = centerX + i * scale;
+                ctx.beginPath();
+                ctx.moveTo(x, centerY - 5);
+                ctx.lineTo(x, centerY + 5);
+                ctx.stroke();
+                ctx.fillText(i.toString(), x, centerY + 20);
+            }
+
+            // Y-axis ticks
+            for (let i = -Math.floor(centerY / scale); i <= Math.floor((canvas.height - centerY) / scale); i++) {
+                if (i === 0) continue;
+                const y = centerY - i * scale;
+                ctx.beginPath();
+                ctx.moveTo(centerX - 5, y);
+                ctx.lineTo(centerX + 5, y);
+                ctx.stroke();
+                ctx.fillText(i.toString(), centerX - 20, y + 5);
+            }
+        }
+
+        function drawLine(a, b, c, color, lineWidth, centerX, centerY, scale) {
+            if (b === 0 && a === 0) return; // Invalid equation
+
+            ctx.strokeStyle = color;
+            ctx.lineWidth = lineWidth;
+            ctx.beginPath();
+
+            if (b !== 0) {
+                // y = (c - ax) / b
+                const xMin = -centerX / scale;
+                const xMax = (canvas.width - centerX) / scale;
+                const yMin = (c - a * xMin) / b;
+                const yMax = (c - a * xMax) / b;
+
+                const x1 = centerX + xMin * scale;
+                const y1 = centerY - yMin * scale;
+                const x2 = centerX + xMax * scale;
+                const y2 = centerY - yMax * scale;
+
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+            } else {
+                // Vertical line: x = c/a
+                const x = c / a;
+                const canvasX = centerX + x * scale;
+                ctx.moveTo(canvasX, 0);
+                ctx.lineTo(canvasX, canvas.height);
+            }
+
+            ctx.stroke();
+        }
+
+        function findIntersection(a1, b1, c1, a2, b2, c2) {
+            // Using Cramer's rule
+            const determinant = a1 * b2 - a2 * b1;
+
+            if (Math.abs(determinant) < 0.0001) {
+                // Lines are parallel or coincident
+                return null;
+            }
+
+            const x = (c1 * b2 - c2 * b1) / determinant;
+            const y = (a1 * c2 - a2 * c1) / determinant;
+
+            return { x, y };
+        }
+
+        function displaySolution(x, y) {
+            const solutionBox = document.getElementById('solution-box');
+            const solutionContent = document.getElementById('solution-content');
+
+            solutionBox.style.display = 'block';
+            solutionContent.innerHTML = `
+                <p><strong>x = ${x.toFixed(4)}</strong></p>
+                <p><strong>y = ${y.toFixed(4)}</strong></p>
+                <p style="margin-top: 10px; font-size: 0.9rem;">
+                    この点 (${x.toFixed(2)}, ${y.toFixed(2)}) が2つの直線の交点です。
+                    これが両方の方程式を満たす唯一の解です！
+                </p>
+            `;
+        }
+
+        function displayNoSolution() {
+            const solutionBox = document.getElementById('solution-box');
+            const solutionContent = document.getElementById('solution-content');
+
+            solutionBox.style.display = 'block';
+            solutionContent.innerHTML = `
+                <p><strong>解なし</strong></p>
+                <p style="margin-top: 10px; font-size: 0.9rem;">
+                    直線は平行で交わりません。つまり、両方の方程式を満たす点はありません。
+                </p>
+            `;
+        }
+
+        // Draw initial graph
+        updateEquationDisplays();
+        drawGraph();
+    </script>
+</body>
+
+</html>
