@@ -1,0 +1,55 @@
+<head>
+    <meta charset="UTF-8">
+</head>
+
+<body style="font-size: 22px">    
+    <script src="mp3_ob.js"></script>
+    <script>        
+        let o = console.log
+        let count = 0
+        function getDataString() {
+            let ret = []
+            for (k in mp3_ob) {
+                if (mp3_ob[k]) {
+                    ret.push(`<span class="word">${k}</span>`)
+                    // o([k, mp3_ob[k]])
+                } else {
+                    ret.push(`<span style="color: gray">${k}</span>`)
+                }
+                // ret[k]= mp3_ob[k]
+                // o(k)
+                count++
+                // if (count > 800) break
+            }
+            return ret.join(" ")
+        }
+        function playMp3(url) {            
+            new Audio(url).play().then(() => o('play, ' + url)).catch(e => o('Playback failed:', e))
+        }
+        onload = () => {
+            document.querySelector('body').innerHTML = getDataString()
+            document.querySelectorAll('.word').forEach(dom => {
+                dom.addEventListener('click', event => {
+                    //o(dom.innerHTML) //need to be .innerHTML, not innerTEXT
+                    playMp3(mp3_ob[dom.innerHTML])                    
+                })
+            })
+            const intervalMs = 12000
+            function scrollPage() {
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+                const docHeight = Math.max(
+                    document.body.scrollHeight, document.documentElement.scrollHeight,
+                    document.body.offsetHeight, document.documentElement.offsetHeight,
+                    document.body.clientHeight, document.documentElement.clientHeight
+                )
+                if (scrollTop + windowHeight + 5 >= docHeight) {
+                    window.scrollTo({ top: 0 })//, behavior: 'smooth'
+                } else {
+                    window.scrollBy({ top: windowHeight, left: 0 })
+                }
+            }
+           // setInterval(scrollPage, intervalMs)
+        }
+    </script>
+</body>
