@@ -2,16 +2,16 @@
     <meta charset="UTF-8">
 </head>
 
-<body style="font-size: 22px">    
+<body style="font-size: 22px">
     <script src="mp3_ob.js"></script>
-    <script>        
+    <script>
         let o = console.log
         let count = 0
         function getDataString() {
             let ret = []
             for (k in mp3_ob) {
                 if (mp3_ob[k]) {
-                    ret.push(`<span class="word">${k}</span>`)
+                    ret.push(`<span class="word" id="${k}">${k}</span>`)
                     // o([k, mp3_ob[k]])
                 } else {
                     ret.push(`<span style="color: gray">${k}</span>`)
@@ -23,15 +23,27 @@
             }
             return ret.join(" ")
         }
-        function playMp3(url) {            
-            new Audio(url).play().then(() => o('play, ' + url)).catch(e => o('Playback failed:', e))
+        function playMp3(word, fn_then, fn_catch) {
+            if( ! mp3_ob[word]){
+                //o("no word audio: " + word)
+                fn_catch(word, "(no word)")
+                return
+            }
+            new Audio(mp3_ob[word]).play().then(() =>{
+                 //o('play, ' + url)
+                 fn_then(word)
+            }).catch(e =>{
+                 //o('Playback failed:', [word, mp3_ob[word]])                 
+                 fn_catch(word, e)
+            })
         }
         onload = () => {
             document.querySelector('body').innerHTML = getDataString()
             document.querySelectorAll('.word').forEach(dom => {
                 dom.addEventListener('click', event => {
                     //o(dom.innerHTML) //need to be .innerHTML, not innerTEXT
-                    playMp3(mp3_ob[dom.innerHTML])                    
+                    //Array.from(document.querySelectorAll(".word")).find(a => a.innerHTML.includes("a"))
+                    playMp3(dom.innerHTML)
                 })
             })
             const intervalMs = 12000
@@ -49,7 +61,31 @@
                     window.scrollBy({ top: windowHeight, left: 0 })
                 }
             }
-            setInterval(scrollPage, intervalMs)
+            //setInterval(scrollPage, intervalMs)
+            function test_play(){
+                let key_ar= []
+                for(let k in mp3_ob) key_ar.push(k)
+                let index=0
+                function playNext(){
+                    playMp3(key_ar[index], function(word){
+                        document.querySelector(`#${word}`).style.backgroundColor = "green"
+                        o(index)
+                        o(word + ", ok")
+                        index+=1
+                        if(index>= key_ar.length) return
+                        setTimeout(playNext, 100)
+                    }, function(word, e){
+                        if(mp3_ob[word]) document.querySelector(`#${word}`).style.backgroundColor = "purple"
+                        o(index)
+                        o(word)
+                        index+=1
+                        if(index>= key_ar.length) return
+                        setTimeout(playNext, 100)
+                    })
+                }
+                playNext()
+            }
+            test_play()
         }
     </script>
 </body>
