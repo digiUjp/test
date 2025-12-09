@@ -56,7 +56,8 @@
                     if(state.isFirstClick){
                         state.isFirstClick= false
                         index= key_ar.indexOf(dom.innerHTML)
-                    }                    
+                    }
+                    scroll_to_dom_if_need(dom)                    
                     //o(dom.innerHTML) //need to be .innerHTML, not innerTEXT
                     //Array.from(document.querySelectorAll(".word")).find(a => a.innerHTML.includes("a"))
                     //o("click, " + dom.innerHTML)
@@ -123,6 +124,14 @@
                     })
                 }
                 //playNext()
+            }
+            function scroll_to_dom_if_need(a){
+                function scrollIntoViewIfNotVisible(ele) {
+                    const rect = ele.getBoundingClientRect()
+                    const viewHeight = window.innerHeight || document.documentElement.clientHeight
+                    if (rect.top < 0 || rect.bottom > viewHeight) ele.scrollIntoView({ behavior: 'smooth', block: 'start' })                    
+                }                
+                if (a) scrollIntoViewIfNotVisible(a)
             }
             //test_play()
             //document.querySelector(`#a`).click()
