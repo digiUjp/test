@@ -1,0 +1,131 @@
+<head>
+    <meta charset="UTF-8">
+</head>
+
+<body style="font-size: 22px">
+    <script src="mp3_ob.js"></script>
+    <script src="jp_ob.js"></script>
+    <script>
+        let state={
+            isFirstClick: true, 
+            not_ok_word_ar: [],
+        }
+        let o = console.log
+        let count = 0
+        function getDataString() {
+            let ret = []
+            for (k in mp3_ob) {
+                if (mp3_ob[k]) {
+                    ret.push(`<span class="word" id="${k}">${k}</span> <span>${jp_ob[k]}</span>, `)
+                    // o([k, mp3_ob[k]])
+                } else {
+                    ret.push(`<span style="color: gray">${k}</span> <span style="color: gray">${jp_ob[k]}</span>, `)
+                }
+                // ret[k]= mp3_ob[k]
+                // o(k)
+                count++
+                // if (count > 800) break
+            }
+            //return `<span class="word" id="book">book</span> ` + ret.join(" ")
+            return ret.join(" ")
+        }
+        function play(word, fn_then, fn_catch){
+            document.querySelector(`#${word}`)
+        }
+        function playMp3(word, fn_then, fn_catch) {
+            if( ! mp3_ob[word]){
+                //o("no word audio: " + word)
+                if(fn_catch) fn_catch(word, "(no word)")
+                return
+            }
+            new Audio(mp3_ob[word]).play().then(() =>{
+                 //o('play, ' + url)
+                 if(fn_then) fn_then(word)
+            }).catch(e =>{
+                 //o('Playback failed:', [word, mp3_ob[word]])                 
+                 if(fn_catch) fn_catch(word, e)
+            })
+        }
+        onload = () => {
+            let key_ar= []
+            for(let k in mp3_ob) key_ar.push(k)
+            let index=0
+            document.querySelector('body').innerHTML = getDataString()
+            document.querySelectorAll('.word').forEach(dom => {
+                dom.addEventListener('click', event => {
+                    if(state.isFirstClick){
+                        state.isFirstClick= false
+                        index= key_ar.indexOf(dom.innerHTML)
+                    }                    
+                    //o(dom.innerHTML) //need to be .innerHTML, not innerTEXT
+                    //Array.from(document.querySelectorAll(".word")).find(a => a.innerHTML.includes("a"))
+                    //o("click, " + dom.innerHTML)
+                    function playNext(){
+                        if(index >= key_ar.length){
+                            o(JSON.stringify(state.not_ok_word_ar))
+                            return
+                        }                        
+                        let v=document.querySelector(`#${key_ar[index]}`)
+                        if(v) v.click(); else {
+                            index+=1
+                            setTimeout(playNext, 10)
+                        }
+                    }
+                    playMp3(dom.innerHTML, function(){
+                        //o("ok, " + dom.innerHTML)
+                        document.querySelector(`#${dom.innerHTML}`).style.backgroundColor = "green"
+                        setTimeout(playNext, 100)
+                        index+=1
+                    }, function(){                        
+                        o("not ok, " + dom.innerHTML)
+                        state.not_ok_word_ar.push(dom.innerHTML)
+                        document.querySelector(`#${dom.innerHTML}`).style.backgroundColor = "purple"
+                        setTimeout(playNext, 10)
+                        index+=1
+                    })
+                })
+            })
+            const intervalMs = 12000
+            function scrollPage() {
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+                const docHeight = Math.max(
+                    document.body.scrollHeight, document.documentElement.scrollHeight,
+                    document.body.offsetHeight, document.documentElement.offsetHeight,
+                    document.body.clientHeight, document.documentElement.clientHeight
+                )
+                if (scrollTop + windowHeight + 5 >= docHeight) {
+                    window.scrollTo({ top: 0 })//, behavior: 'smooth'
+                } else {
+                    window.scrollBy({ top: windowHeight, left: 0 })
+                }
+            }
+            //setInterval(scrollPage, intervalMs)
+            function test_play(){
+                let key_ar= []
+                for(let k in mp3_ob) key_ar.push(k)
+                let index=0
+                function playNext(){
+                    playMp3(key_ar[index], function(word){
+                        document.querySelector(`#${word}`).style.backgroundColor = "green"
+                        o(index)
+                        o(word + ", ok")
+                        index+=1
+                        if(index>= key_ar.length) return
+                        setTimeout(playNext, 100)
+                    }, function(word, e){
+                        if(mp3_ob[word]) document.querySelector(`#${word}`).style.backgroundColor = "purple"
+                        o(index)
+                        o(word)
+                        index+=1
+                        if(index>= key_ar.length) return
+                        setTimeout(playNext, 100)
+                    })
+                }
+                //playNext()
+            }
+            //test_play()
+            //document.querySelector(`#a`).click()
+        }
+    </script>
+</body>
