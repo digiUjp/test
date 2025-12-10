@@ -7,7 +7,7 @@
         .disable {
             background: rgb(77, 6, 18);
         }
-    </style>        
+    </style>
     <script src="en_ipa_jp_mp3.js"></script>
     <script>
         //let en_ipa_jp_mp3_ob= {"the": ["ðə, ˈðʌ, ði", "その", 0]
@@ -24,24 +24,25 @@
         }
         let o = console.log
         let count = 0
-        function get_jp_ob(){
-            let ret={}
-            for( let k in en_ipa_jp_mp3_ob) ret[k]= en_ipa_jp_mp3_ob[k][1]
+        function get_jp_ob() {
+            let ret = {}
+            for (let k in en_ipa_jp_mp3_ob) ret[k] = en_ipa_jp_mp3_ob[k][1]
             return ret
         }
-        function get_mp3_ob(){
-            let ret={}
-            for( let k in en_ipa_jp_mp3_ob) ret[k]= en_ipa_jp_mp3_ob[k][2]
+        function get_mp3_ob() {
+            let ret = {}
+            for (let k in en_ipa_jp_mp3_ob) ret[k] = en_ipa_jp_mp3_ob[k][2]
             return ret
         }
         function getDataString() {
             let ret = []
             for (k in state.mp3_ob) {
                 if (state.mp3_ob[k]) {
-                    ret.push(`<span class="word" id="${k}">${k}</span> <span>[${en_ipa_jp_mp3_ob[k][0]}] ${state.jp_ob[k]}</span>, `)                    
+                    //ret.push(`<span>[${en_ipa_jp_mp3_ob[k][0]}]</span> <span class="word" id="${k}">${k}</span> <span>${state.jp_ob[k]}</span>, `)
+                    ret.push(`[${en_ipa_jp_mp3_ob[k][0]}] <span class="word" id="${k}">${k}</span> ${state.jp_ob[k]}, `)
                 } else {
-                    ret.push(`<span style="color: gray">${k}</span> <span style="color: gray">[${en_ipa_jp_mp3_ob[k][0]}] ${state.jp_ob[k]}</span>, `)
-                }                
+                    ret.push(`<span style="color: gray">[${en_ipa_jp_mp3_ob[k][0]}] ${k} ${state.jp_ob[k]}</span>, `)
+                }
                 // o(k)
                 count++
                 // if (count > 800) break
@@ -78,11 +79,11 @@
                 //o("no word audio: " + word)
                 if (fn_catch) fn_catch(word, "(no word)")
                 return
-            }            
+            }
             new Audio(`https://digiujp.github.io/lang-bank/mp3/${word[0]}/${word}.mp3`).play().then(() => {
                 //o('play, ' + url)
                 if (fn_then) fn_then(word)
-            }).catch(e => {                
+            }).catch(e => {
                 if (fn_catch) fn_catch(word, e)
             })
         }
@@ -149,13 +150,13 @@
                 state.isFirstClick = true
                 //state.is_auto_clicking = !state.is_auto_clicking
 
-                state.is_disable_auto= true
+                state.is_disable_auto = true
                 o("state.is_disable_auto= true")
             })
 
             document.querySelectorAll('.word').forEach(dom => {
-                init_double_click(dom, function(){
-                    state.is_disable_auto= false
+                init_double_click(dom, function () {
+                    state.is_disable_auto = false
                     o("state.is_disable_auto= false")
                 })
             })
@@ -196,7 +197,7 @@
                             return
                         }
                         let v = document.querySelector(`#${state.key_ar[state.index]}`)
-                        if (v && state.is_auto_clicking && !state.is_disable_auto && ! v.classList.contains('disable')) v.click(); else {
+                        if (v && state.is_auto_clicking && !state.is_disable_auto && !v.classList.contains('disable')) v.click(); else {
                             state.index += 1
                             setTimeout(playNext, 10)
                         }
@@ -242,7 +243,7 @@
                     if (rect.top < 0 || rect.bottom > viewHeight) ele.scrollIntoView({ behavior: 'smooth', block: 'start' })
                 }
                 if (a) scrollIntoViewIfNotVisible(a)
-            }            
+            }
             //document.querySelector(`#a`).click()
         }
     </script>
