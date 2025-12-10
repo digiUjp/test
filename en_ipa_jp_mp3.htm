@@ -19,11 +19,36 @@
             mp3_ob: get_mp3_ob(),
             key_ar: [],
             index: 0,
+            isMobileBrowser: /Mobi|Android/i.test(navigator.userAgent),
             is_auto_clicking: false,
             is_disable_auto: !true,
+            is_downloading: false,
         }
         let o = console.log
         let count = 0
+        {
+            (function (console) {
+                console.save = function (data, filename) {
+                    if (state.is_downloading) return
+                    state.is_downloading = true
+                    if (!data) {
+                        console.error('Console.save: No data')
+                        state.is_downloading = false
+                        return;
+                    }
+                    if (!filename) filename = 'console.json';
+                    if (typeof data === 'object') {
+                        data = JSON.stringify(data, undefined, 4);
+                    }
+                    const blob = new Blob([data], { type: 'text/json' });
+                    const a = document.createElement('a');
+                    a.download = filename;
+                    a.href = window.URL.createObjectURL(blob);
+                    a.click()
+                    state.is_downloading = false
+                };
+            })(window)
+        }
         function get_jp_ob() {
             let ret = {}
             for (let k in en_ipa_jp_mp3_ob) ret[k] = en_ipa_jp_mp3_ob[k][1]
@@ -138,9 +163,9 @@
             //     })
             // })
         }
-        onload = () => {
-            document.querySelector('body').innerHTML = getDataString()
-
+        document.querySelector('body').innerHTML = getDataString()
+        window.addEventListener('DOMContentLoaded', function () {
+            //onload = () => {            
             setTimeout(init_storage_data, 1000)
 
             for (let k in state.mp3_ob) state.key_ar.push(k)
@@ -152,6 +177,8 @@
 
                 state.is_disable_auto = true
                 o("state.is_disable_auto= true")
+                o(JSON.stringify(state.not_ok_word_ar))
+                window.save(state.not_ok_word_ar, new Date().getTime() + ".json")
             })
 
             document.querySelectorAll('.word').forEach(dom => {
@@ -192,12 +219,30 @@
                         console.log('保存したデータ:', obj)
                     }
                     function playNext() {
+                        function mobile_click(btn) {
+                            // function triggerClick() {
+                            //     btn.click()
+                            // }                            
+                            function triggerMouseClick() {
+                                const ev = new MouseEvent('click', {
+                                    view: window,
+                                    bubbles: true,
+                                    cancelable: true
+                                })
+                                btn.dispatchEvent(ev)
+                            }
+                            triggerMouseClick() //triggerClick()
+                        }
                         if (state.index >= state.key_ar.length) {
                             o(JSON.stringify(state.not_ok_word_ar))
+                            window.save(state.not_ok_word_ar, new Date().getTime() + ".json")
                             return
                         }
                         let v = document.querySelector(`#${state.key_ar[state.index]}`)
-                        if (v && state.is_auto_clicking && !state.is_disable_auto && !v.classList.contains('disable')) v.click(); else {
+                        if (v && state.is_auto_clicking && !state.is_disable_auto && !v.classList.contains('disable')) {
+                            if (state.isMobileBrowser) mobile_click(v)
+                            else v.click()
+                        } else {
                             state.index += 1
                             setTimeout(playNext, 10)
                         }
@@ -245,6 +290,6 @@
                 if (a) scrollIntoViewIfNotVisible(a)
             }
             //document.querySelector(`#a`).click()
-        }
+        })
     </script>
 </body>
