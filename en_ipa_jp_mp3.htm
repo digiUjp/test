@@ -38,9 +38,9 @@
             let ret = []
             for (k in state.mp3_ob) {
                 if (state.mp3_ob[k]) {
-                    ret.push(`<span class="word" id="${k}">${k}</span> <span>${state.jp_ob[k]}</span>, `)                    
+                    ret.push(`<span class="word" id="${k}">${k}</span> <span>[${en_ipa_jp_mp3_ob[k][0]}] ${state.jp_ob[k]}</span>, `)                    
                 } else {
-                    ret.push(`<span style="color: gray">${k}</span> <span style="color: gray">${state.jp_ob[k]}</span>, `)
+                    ret.push(`<span style="color: gray">${k}</span> <span style="color: gray">[${en_ipa_jp_mp3_ob[k][0]}] ${state.jp_ob[k]}</span>, `)
                 }                
                 // o(k)
                 count++
@@ -80,7 +80,7 @@
                 return
             }            
             new Audio(`https://digiujp.github.io/lang-bank/mp3/${word[0]}/${word}.mp3`).play().then(() => {
-                o('play, ' + url)
+                //o('play, ' + url)
                 if (fn_then) fn_then(word)
             }).catch(e => {                
                 if (fn_catch) fn_catch(word, e)
