@@ -105,7 +105,7 @@
                 if (fn_catch) fn_catch(word, "(no word)")
                 return
             }
-            new Audio(`https://digiujp.github.io/lang-bank/mp3/${word[0]}/${word}.mp3`).play().then(() => {
+            new Audio(`/lang-bank/mp3/${word[0]}/${word}.mp3`).play().then(() => {
                 //o('play, ' + url)
                 if (fn_then) fn_then(word)
             }).catch(e => {
