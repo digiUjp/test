@@ -1,0 +1,295 @@
+<head>
+    <meta charset="UTF-8">
+</head>
+
+<body style="font-size: 22px">
+    <style>
+        .disable {
+            background: rgb(77, 6, 18);
+        }
+    </style>
+    <script src="freq-en_ipa_jp_mp3.js"></script>
+    <script>
+        //let en_ipa_jp_mp3_ob= {"the": ["ðə, ˈðʌ, ði", "その", 0]
+        //p.classList.toggle('disable'), p.classList.contains('disable')
+        let state = {
+            isFirstClick: true,
+            not_ok_word_ar: [],
+            jp_ob: get_jp_ob(),
+            mp3_ob: get_mp3_ob(),
+            key_ar: [],
+            index: 0,
+            isMobileBrowser: /Mobi|Android/i.test(navigator.userAgent),
+            is_auto_clicking: false,
+            is_disable_auto: !true,
+            is_downloading: false,
+        }
+        let o = console.log
+        let count = 0
+        {
+            (function (console) {
+                console.save = function (data, filename) {
+                    if (state.is_downloading) return
+                    state.is_downloading = true
+                    if (!data) {
+                        console.error('Console.save: No data')
+                        state.is_downloading = false
+                        return;
+                    }
+                    if (!filename) filename = 'console.json';
+                    if (typeof data === 'object') {
+                        data = JSON.stringify(data, undefined, 4);
+                    }
+                    const blob = new Blob([data], { type: 'text/json' });
+                    const a = document.createElement('a');
+                    a.download = filename;
+                    a.href = window.URL.createObjectURL(blob);
+                    a.click()
+                    state.is_downloading = false
+                };
+            })(window)
+        }
+        function get_jp_ob() {
+            let ret = {}
+            for (let k in en_ipa_jp_mp3_ob) ret[k] = en_ipa_jp_mp3_ob[k][1]
+            return ret
+        }
+        function get_mp3_ob() {
+            let ret = {}
+            for (let k in en_ipa_jp_mp3_ob) ret[k] = en_ipa_jp_mp3_ob[k][2]
+            return ret
+        }
+        function getDataString() {
+            let ret = []
+            for (k in state.mp3_ob) {
+                if (state.mp3_ob[k]) {
+                    //ret.push(`<span>[${en_ipa_jp_mp3_ob[k][0]}]</span> <span class="word" id="${k}">${k}</span> <span>${state.jp_ob[k]}</span>, `)
+                    ret.push(`[${en_ipa_jp_mp3_ob[k][0]}] <span class="word" id="${k}">${k}</span> ${state.jp_ob[k]}, `)
+                } else {
+                    ret.push(`<span style="color: gray">[${en_ipa_jp_mp3_ob[k][0]}] ${k} ${state.jp_ob[k]}</span>, `)
+                }
+                // o(k)
+                count++
+                // if (count > 800) break
+            }
+            //return `<span class="word" id="book">book</span> ` + ret.join(" ")
+            return ret.join(" ")
+        }
+        function init_double_click(a_dom, a_fn) {
+            let btn = a_dom //const btn = document.getElementById('btn');
+            let lastTap = 0;
+            const doubleTapThreshold = 500  // ミリ秒
+            function onPointerUp(event) {
+                const now = Date.now();
+                const delta = now - lastTap;
+                if (0 < delta && delta < doubleTapThreshold) {
+                    a_fn()
+                    // ダブルタップ／ダブルクリック検出
+                    //console.log('double tap / click detected');
+                    // ここにダブルクリック用の処理
+                }
+                lastTap = now;
+            }
+            btn.addEventListener('dblclick', (e) => {
+                //console.log('dblclick event (mouse)')
+                a_fn()
+            })
+            btn.addEventListener('pointerup', onPointerUp) // または('touchend', onPointerUp)
+        }
+        function play(word, fn_then, fn_catch) {
+            document.querySelector(`#${word}`)
+        }
+        function playMp3(word, fn_then, fn_catch) {
+            if (!state.mp3_ob[word]) {
+                //o("no word audio: " + word)
+                if (fn_catch) fn_catch(word, "(no word)")
+                return
+            }
+            new Audio(`/lang-bank/mp3/${word[0]}/${word}.mp3`).play().then(() => {
+                //o('play, ' + url)
+                if (fn_then) fn_then(word)
+            }).catch(e => {
+                if (fn_catch) fn_catch(word, e)
+            })
+        }
+        function init_storage_data() {
+            function init_word_background_color() {
+                const saved = localStorage.getItem('buttonTexts');
+                if (saved) {
+                    try {
+                        const obj = JSON.parse(saved)
+                        console.log('復元したデータ:', obj)
+                        for (let k in obj) {
+                            // o(`#${k}`)
+                            if (obj[k]) {
+                                document.querySelector(`#${k}`).classList.add("disable") //.add, .remove
+                                document.querySelector(`#${k}`).style.backgroundColor = "pink" //need for visual
+                            }
+                        }
+                    } catch (e) {
+                        console.error('JSON parse error:', e)
+                    }
+                }
+            }
+            window.addEventListener('DOMContentLoaded', function () {
+                const saved = localStorage.getItem('buttonTexts');
+                if (saved) {
+                    try {
+                        const obj = JSON.parse(saved)
+                        console.log('復元したデータ:', obj)
+                        // たとえばコンソールに出力。必要に応じて UI 更新など
+                    } catch (e) {
+                        console.error('JSON parse error:', e)
+                    }
+                }
+            })
+            init_word_background_color()
+
+            // document.querySelectorAll('button').forEach(btn => {
+            //     btn.addEventListener('click', function (e) {
+            //         // localStorage 内に以前のデータがあればロード、なければ空オブジェクト
+            //         let obj = {};
+            //         const prev = localStorage.getItem('buttonTexts');
+            //         if (prev) {
+            //             try {
+            //                 obj = JSON.parse(prev)
+            //             } catch (e) {                            
+            //                 obj = {}
+            //             }
+            //         }                    
+            //         obj[btn.id] = btn.textContent;
+            //         localStorage.setItem('buttonTexts', JSON.stringify(obj))
+            //         console.log('保存したデータ:', obj)
+            //     })
+            // })
+        }
+        document.querySelector('body').innerHTML = getDataString()
+        window.addEventListener('DOMContentLoaded', function () {
+            //onload = () => {            
+            setTimeout(init_storage_data, 1000)
+
+            for (let k in state.mp3_ob) state.key_ar.push(k)
+
+            init_double_click(document.querySelector('body'), function () {
+                //o("double click")
+                state.isFirstClick = true
+                //state.is_auto_clicking = !state.is_auto_clicking
+
+                state.is_disable_auto = true
+                o("state.is_disable_auto= true")
+                o(JSON.stringify(state.not_ok_word_ar))
+                window.save(state.not_ok_word_ar, new Date().getTime() + ".json")
+            })
+
+            document.querySelectorAll('.word').forEach(dom => {
+                init_double_click(dom, function () {
+                    state.is_disable_auto = false
+                    o("state.is_disable_auto= false")
+                })
+            })
+
+            document.querySelectorAll('.word').forEach(dom => {
+                dom.addEventListener('click', event => {
+                    if (state.isFirstClick) {
+                        state.is_auto_clicking = true
+                        state.isFirstClick = false
+                        state.index = state.key_ar.indexOf(dom.innerHTML)
+                    }
+                    scroll_to_dom_if_need(dom)
+                    //o(dom.innerHTML) //need to be .innerHTML, not innerTEXT
+                    //Array.from(document.querySelectorAll(".word")).find(a => a.innerHTML.includes("a"))
+                    //o("click, " + dom.innerHTML)
+                    function click_when_auto_playing() {
+                        let obj = {}
+                        const prev = localStorage.getItem('buttonTexts')
+                        if (prev) {
+                            try {
+                                obj = JSON.parse(prev)
+                            } catch (e) {
+                                obj = {}
+                            }
+                        }
+                        obj[dom.innerHTML] = !obj[dom.innerHTML]
+                        dom.classList.toggle('disable') //.add, .remove
+
+                        if (obj[dom.innerHTML]) document.querySelector(`#${dom.innerHTML}`).style.backgroundColor = "pink"
+                        else document.querySelector(`#${dom.innerHTML}`).style.backgroundColor = ""
+
+                        localStorage.setItem('buttonTexts', JSON.stringify(obj))
+                        console.log('保存したデータ:', obj)
+                    }
+                    function playNext() {
+                        function mobile_click(btn) {
+                            // function triggerClick() {
+                            //     btn.click()
+                            // }                            
+                            function triggerMouseClick() {
+                                const ev = new MouseEvent('click', {
+                                    view: window,
+                                    bubbles: true,
+                                    cancelable: true
+                                })
+                                btn.dispatchEvent(ev)
+                            }
+                            triggerMouseClick() //triggerClick()
+                        }
+                        if (state.index >= state.key_ar.length) {
+                            o(JSON.stringify(state.not_ok_word_ar))
+                            window.save(state.not_ok_word_ar, new Date().getTime() + ".json")
+                            return
+                        }
+                        let v = document.querySelector(`#${state.key_ar[state.index]}`)
+                        if (v && state.is_auto_clicking && !state.is_disable_auto && !v.classList.contains('disable')) {
+                            if (state.isMobileBrowser) mobile_click(v)
+                            else v.click()
+                        } else {
+                            state.index += 1
+                            setTimeout(playNext, 10)
+                        }
+                    }
+                    if (state.is_disable_auto) {
+                        click_when_auto_playing()
+                    } else {
+                        playMp3(dom.innerHTML, function () {
+                            //o("ok, " + dom.innerHTML)
+                            document.querySelector(`#${dom.innerHTML}`).style.backgroundColor = "green"
+                            setTimeout(playNext, 100)
+                            state.index += 1
+                        }, function () {
+                            o("not ok, " + dom.innerHTML + ", " + state.mp3_ob[dom.innerHTML])
+                            state.not_ok_word_ar.push(dom.innerHTML)
+                            document.querySelector(`#${dom.innerHTML}`).style.backgroundColor = "purple"
+                            setTimeout(playNext, 10)
+                            state.index += 1
+                        })
+                    }
+                })
+            })
+            const intervalMs = 12000
+            function scrollPage() {
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+                const docHeight = Math.max(
+                    document.body.scrollHeight, document.documentElement.scrollHeight,
+                    document.body.offsetHeight, document.documentElement.offsetHeight,
+                    document.body.clientHeight, document.documentElement.clientHeight
+                )
+                if (scrollTop + windowHeight + 5 >= docHeight) {
+                    window.scrollTo({ top: 0 })//, behavior: 'smooth'
+                } else {
+                    window.scrollBy({ top: windowHeight, left: 0 })
+                }
+            }
+            setInterval(scrollPage, intervalMs)
+            function scroll_to_dom_if_need(a) {
+                function scrollIntoViewIfNotVisible(ele) {
+                    const rect = ele.getBoundingClientRect()
+                    const viewHeight = window.innerHeight || document.documentElement.clientHeight
+                    if (rect.top < 0 || rect.bottom > viewHeight) ele.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }
+                if (a) scrollIntoViewIfNotVisible(a)
+            }
+            //document.querySelector(`#a`).click()
+        })
+    </script>
+</body>
