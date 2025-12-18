@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            height: 2000px
+        }
+
+        #iframe {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <iframe id="iframe" src=""></iframe>
+    <script>
+        let o = console.log
+        let is_english = true
+        let target_url_ar = [
+            'https://ko.wikipedia.org/wiki/Special:Random',            
+        ]
+        function get_iframe_height(iframe) {
+            const doc = iframe.contentWindow.document;
+            const height1 = doc.body.scrollHeight;
+            const height2 = doc.documentElement.scrollHeight;
+            return Math.max(height1, height2)
+        }
+        onload = function () {
+            const iframe = document.getElementById("iframe")            
+            const intervalMs = 8000
+            function nextPage(){
+                if (is_english) {
+                    iframe.src = target_url_ar[0]
+                } else {
+                    iframe.src = target_url_ar[1]
+                }            
+                //is_english = !is_english
+            }            
+            nextPage()
+            function scrollPage() {
+                try {
+                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+                    const docHeight = Math.max(
+                        document.body.scrollHeight, document.documentElement.scrollHeight,
+                        document.body.offsetHeight, document.documentElement.offsetHeight,
+                        document.body.clientHeight, document.documentElement.clientHeight
+                    )
+                    if (scrollTop + windowHeight * 2 + 5 >= docHeight) {
+                        window.scrollTo({ top: 0 })//, behavior: 'smooth'
+                        document.body.style.height = '2000px'
+                        const intervalMs = 8000
+                        nextPage()
+                    } else {
+                        window.scrollBy({ top: windowHeight, left: 0 })//, behavior: 'smooth'
+                        document.body.style.height = get_iframe_height(iframe) + 'px'
+                    }
+                } catch (e) {
+                }
+                setTimeout(scrollPage, intervalMs)
+            }
+            setTimeout(scrollPage, intervalMs)
+        }        
+    </script>
+</body>
+
+</html>
