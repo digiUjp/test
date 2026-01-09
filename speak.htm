@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Voice to Text Example</title>
+</head>
+<body>
+    <h1>Voice to Text Demo</h1>
+    <button id="start">Start Listening</button>
+    <p id="output">Your speech will appear here...</p>
+
+    <script>
+        const startButton = document.getElementById('start');
+        const output = document.getElementById('output');
+
+        // Check if the browser supports the Web Speech API
+        if (!('webkitSpeechRecognition' in window)) {
+            output.textContent = 'Your browser does not support speech recognition.';
+        } else {
+            const recognition = new webkitSpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+
+            recognition.onresult = (event) => {
+                let transcript = '';
+                for (let i = 0; i < event.results.length; i++) {
+                    transcript += event.results[i][0].transcript;
+                }
+                output.textContent = transcript;
+            };
+
+            recognition.onerror = (event) => {
+                output.textContent = 'Error occurred in recognition: ' + event.error;
+            };
+
+            startButton.addEventListener('click', () => {
+                recognition.start();
+                output.textContent = 'Listening...';
+            });
+        }
+    </script>
+</body>
+</html>
