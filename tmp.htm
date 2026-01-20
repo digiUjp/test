@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>WASM TTS Sample</title>
+</head>
+
+<body>
+    <textarea id="text" cols="30" rows="4">こんにちは、WASM TTS の例です。</textarea><br>
+    <button id="speakBtn">再生</button>
+    <script>
+        const utter = new SpeechSynthesisUtterance("生成したテキストをここに");
+        utter.lang = "ja-JP";
+        speechSynthesis.speak(utter);
+    </script>
+    <!-- <script type="module">
+        import { SherpaOnnxWasmTTSClient } from 'https://cdn.jsdelivr.net/gh/willwade/js-tts-wrapper-assets@main/sherpaonnx/tts/index.js';
+
+        const client = new SherpaOnnxWasmTTSClient({
+            wasmPath: 'https://cdn.jsdelivr.net/gh/willwade/js-tts-wrapper-assets@main/sherpaonnx/tts/sherpa-onnx-tts.js',
+            mergedModelsUrl: 'https://cdn.jsdelivr.net/gh/willwade/js-tts-wrapper-assets@main/sherpaonnx/models/merged_models.json'
+        });
+
+        document.getElementById('speakBtn').onclick = async () => {
+            const text = document.getElementById('text').value;
+            await client.speak(text);
+        };
+    </script> -->
+</body>
+
+</html>
