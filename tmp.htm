@@ -10,6 +10,30 @@
     <textarea id="text" cols="30" rows="4">こんにちは、WASM TTS の例です。</textarea><br>
     <button id="speakBtn">再生</button>
     <script>
+        async function speak() {
+          // 1. 発話オブジェクトの作成
+          const utterance = new SpeechSynthesisUtterance("こんにちは。Gemini Nanoと新しいWASMエンジンをテストしています。");
+          
+          // 2. 利用可能な声のリストを取得
+          const voices = window.speechSynthesis.getVoices();
+          
+          // 最新のWASMベースの音声（Google Japaneseなど）を探して設定
+          // ※環境により名称は異なります
+          const preferredVoice = voices.find(v => v.name.includes("Google") && v.lang === "ja-JP");
+          if (preferredVoice) {
+            utterance.voice = preferredVoice;
+          }
+    
+          // 3. 再生
+          window.speechSynthesis.speak(utterance);
+        }
+    
+        // 起動時に声をロード（ブラウザの仕様で初回取得にはイベント待機が必要な場合がある）
+        window.speechSynthesis.onvoiceschanged = () => {
+          console.log("利用可能な音声が更新されました:", window.speechSynthesis.getVoices());
+        }
+        speak()
+        
         const utter = new SpeechSynthesisUtterance("生成したテキストをここに");
         utter.lang = "ja-JP";
         speechSynthesis.speak(utter);
