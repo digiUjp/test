@@ -32,8 +32,7 @@
         window.speechSynthesis.onvoiceschanged = () => {
           console.log("利用可能な音声が更新されました:", window.speechSynthesis.getVoices());
         }
-        speak()
-        
+        setTimeout(()=>speak(), 5000)                
         const utter = new SpeechSynthesisUtterance("生成したテキストをここに");
         utter.lang = "ja-JP";
         speechSynthesis.speak(utter);
