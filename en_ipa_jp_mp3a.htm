@@ -107,7 +107,7 @@
             }
             try{
               speechSynthesis.speak(new SpeechSynthesisUtterance(word))
-              if (fn_then) fn_then(word)
+              if (fn_then) setTimeout(()=>fn_then(word),3500)
             }catch(e){
               if (fn_catch) fn_catch(word, e)
             }            
