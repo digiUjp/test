@@ -259,7 +259,7 @@
                         playMp3(dom.innerHTML, function () {
                             //o("ok, " + dom.innerHTML)
                             document.querySelector(`#${dom.innerHTML}`).style.backgroundColor = "green"
-                            setTimeout(playNext, 2800)
+                            setTimeout(playNext, 1000)
                             state.index += 1
                         }, function () {
                             o("not ok, " + dom.innerHTML + ", " + state.mp3_ob[dom.innerHTML])
