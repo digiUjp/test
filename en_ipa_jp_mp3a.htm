@@ -106,8 +106,11 @@
                 return
             }
             try{
-              speechSynthesis.speak(new SpeechSynthesisUtterance(word))
-              if (fn_then) setTimeout(()=>fn_then(word),350)
+                const uttr = new SpeechSynthesisUtterance(word)
+                uttr.lang = 'en-US'
+                speechSynthesis.speak(uttr)
+                //speechSynthesis.speak(new SpeechSynthesisUtterance(word))
+              if (fn_then) setTimeout(()=>fn_then(word),100)
             }catch(e){
               if (fn_catch) fn_catch(word, e)
             }            
@@ -259,7 +262,7 @@
                         playMp3(dom.innerHTML, function () {
                             //o("ok, " + dom.innerHTML)
                             document.querySelector(`#${dom.innerHTML}`).style.backgroundColor = "green"
-                            setTimeout(playNext, 1000)
+                            setTimeout(playNext, 500)
                             state.index += 1
                         }, function () {
                             o("not ok, " + dom.innerHTML + ", " + state.mp3_ob[dom.innerHTML])
