@@ -107,7 +107,7 @@
             }
             try{
               speechSynthesis.speak(new SpeechSynthesisUtterance(word))
-              if (fn_then) setTimeout(()=>fn_then(word),3500)
+              if (fn_then) setTimeout(()=>fn_then(word),350)
             }catch(e){
               if (fn_catch) fn_catch(word, e)
             }            
@@ -259,7 +259,7 @@
                         playMp3(dom.innerHTML, function () {
                             //o("ok, " + dom.innerHTML)
                             document.querySelector(`#${dom.innerHTML}`).style.backgroundColor = "green"
-                            setTimeout(playNext, 4100)
+                            setTimeout(playNext, 2800)
                             state.index += 1
                         }, function () {
                             o("not ok, " + dom.innerHTML + ", " + state.mp3_ob[dom.innerHTML])
@@ -281,12 +281,12 @@
                     document.body.clientHeight, document.documentElement.clientHeight
                 )
                 if (scrollTop + windowHeight + 5 >= docHeight) {
-                    window.scrollTo({ top: 0 })//, behavior: 'smooth'
+                    //window.scrollTo({ top: 0 })//, behavior: 'smooth'
                 } else {
-                    window.scrollBy({ top: windowHeight, left: 0 })
+                    //window.scrollBy({ top: windowHeight, left: 0 })
                 }
             }
-            setInterval(scrollPage, intervalMs)
+            //setInterval(scrollPage, intervalMs)
             function scroll_to_dom_if_need(a) {
                 function scrollIntoViewIfNotVisible(ele) {
                     const rect = ele.getBoundingClientRect()
