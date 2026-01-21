@@ -107,7 +107,7 @@
             //}
             try{
                 const uttr = new SpeechSynthesisUtterance(word)
-                uttr.lang = 'en-US'
+                //uttr.lang = 'en-US'
                 speechSynthesis.speak(uttr)
                 //speechSynthesis.speak(new SpeechSynthesisUtterance(word))
               if (fn_then) setTimeout(()=>fn_then(word),10)
