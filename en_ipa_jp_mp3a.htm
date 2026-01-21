@@ -62,12 +62,12 @@
         function getDataString() {
             let ret = []
             for (k in state.mp3_ob) {
-                if (state.mp3_ob[k]) {
+                //if (state.mp3_ob[k]) {
                     //ret.push(`<span>[${en_ipa_jp_mp3_ob[k][0]}]</span> <span class="word" id="${k}">${k}</span> <span>${state.jp_ob[k]}</span>, `)
                     ret.push(`[${en_ipa_jp_mp3_ob[k][0]}] <span class="word" id="${k}">${k}</span> ${state.jp_ob[k]}, `)
-                } else {
-                    ret.push(`<span style="color: gray">[${en_ipa_jp_mp3_ob[k][0]}] ${k} ${state.jp_ob[k]}</span>, `)
-                }
+                //} else {
+                    //ret.push(`<span style="color: gray">[${en_ipa_jp_mp3_ob[k][0]}] ${k} ${state.jp_ob[k]}</span>, `)
+                //}
                 // o(k)
                 count++
                 // if (count > 800) break
@@ -110,7 +110,7 @@
                 uttr.lang = 'en-US'
                 speechSynthesis.speak(uttr)
                 //speechSynthesis.speak(new SpeechSynthesisUtterance(word))
-              if (fn_then) setTimeout(()=>fn_then(word),100)
+              if (fn_then) setTimeout(()=>fn_then(word),10)
             }catch(e){
               if (fn_catch) fn_catch(word, e)
             }            
@@ -262,7 +262,7 @@
                         playMp3(dom.innerHTML, function () {
                             //o("ok, " + dom.innerHTML)
                             document.querySelector(`#${dom.innerHTML}`).style.backgroundColor = "green"
-                            setTimeout(playNext, 1500)
+                            setTimeout(playNext, 800)
                             state.index += 1
                         }, function () {
                             o("not ok, " + dom.innerHTML + ", " + state.mp3_ob[dom.innerHTML])
