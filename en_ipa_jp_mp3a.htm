@@ -100,11 +100,11 @@
             document.querySelector(`#${word}`)
         }
         function playMp3(word, fn_then, fn_catch) {
-            if (!state.mp3_ob[word]) {
+            //if (!state.mp3_ob[word]) {
                 //o("no word audio: " + word)
-                if (fn_catch) fn_catch(word, "(no word)")
-                return
-            }
+                //if (fn_catch) fn_catch(word, "(no word)")
+                //return
+            //}
             try{
                 const uttr = new SpeechSynthesisUtterance(word)
                 uttr.lang = 'en-US'
