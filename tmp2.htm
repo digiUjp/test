@@ -2,57 +2,38 @@
 <html>
 
 <body>
-    <button onclick="speak()">1</button>
-    <button onclick="speak2()">2</button>
     <script>
-        o= console.log
+        o = console.log
         const speak = (word) => {
+            o("prepare speak " + word)
             return new Promise((resolve, reject) => {
+                window.speechSynthesis.cancel()
+                o("speak " + word)
                 const uttr = new SpeechSynthesisUtterance(word);
-                uttr.lang = 'en-US'                
-                uttr.onend = resolve;                
-                uttr.onerror = (event) => reject(event)
+                uttr.lang = 'en-US'
+                uttr.onend = resolve   
+                uttr.onerror = (event) => {
+                    console.error("SpeechSynthesis Error:", event.error)
+                    reject(event)
+                }
                 window.speechSynthesis.speak(uttr)
             })
-        }        
+        }
         async function playSequence() {
-            o("0")
-            await speak("Hello");
-            o("1")
-            await speak("World");
-            o("2")
+            try {
+                o("0");
+                await speak("Hello")
+                o("1");
+                await speak("World")
+                o("2");
+            } catch (e) {
+                console.error("Sequence failed:", e)
+            }
         }
-        playSequence()
-        o("3")
-        function speak2() {
-            speechSynthesis.speak(new SpeechSynthesisUtterance("hello world"));
-        }
-        //speak2()
-        setTimeout(()=>document.querySelectorAll("button")[0].click(), 3000)
-        setTimeout(()=>document.querySelectorAll("button")[1].click(), 5000)
-        // async function speak() {
-        //     // 1. 発話オブジェクトの作成
-        //     const utterance = new SpeechSynthesisUtterance("こんにちは。Gemini Nanoと新しいWASMエンジンをテストしています。");
-
-        //     // 2. 利用可能な声のリストを取得
-        //     const voices = window.speechSynthesis.getVoices();
-
-        //     // 最新のWASMベースの音声（Google Japaneseなど）を探して設定
-        //     // ※環境により名称は異なります
-        //     const preferredVoice = voices.find(v => v.name.includes("Google") && v.lang === "ja-JP");
-        //     if (preferredVoice) {
-        //         utterance.voice = preferredVoice;
-        //     }
-
-        //     // 3. 再生
-        //     window.speechSynthesis.speak(utterance);
-        // }
-
-        // // 起動時に声をロード（ブラウザの仕様で初回取得にはイベント待機が必要な場合がある）
-        // window.speechSynthesis.onvoiceschanged = () => {
-        //     console.log("利用可能な音声が更新されました:", window.speechSynthesis.getVoices());
-        // }
-        // setTimeout(()=>speak(), 5000)
+        document.addEventListener('click', () => {
+            o("再生を開始します...");
+            playSequence()
+        }) //, { once: true } 最初の1回だけ実行
     </script>
 </body>
 
