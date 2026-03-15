@@ -80,6 +80,7 @@
             return ret.join(" ")
         }
         function init_double_click(a_dom, a_fn) {
+            return
             let btn = a_dom //const btn = document.getElementById('btn');
             let lastTap = 0;
             const doubleTapThreshold = 500  // ミリ秒
@@ -119,6 +120,7 @@
             window.speechSynthesis.speak(uttr)
         }
         function playMp3(word, fn_then, fn_catch) {
+            return
             //if (!state.mp3_ob[word]) {
                 //o("no word audio: " + word)
                 //if (fn_catch) fn_catch(word, "(no word)")
@@ -143,6 +145,7 @@
             // })
         }
         function init_storage_data() {
+            return
             function init_word_background_color() {
                 const saved = localStorage.getItem('buttonTexts');
                 if (saved) {
@@ -195,6 +198,7 @@
         }
         document.querySelector('body').innerHTML = getDataString()
         window.addEventListener('DOMContentLoaded', function () {
+            return
             //onload = () => {            
             setTimeout(init_storage_data, 1000)
 
